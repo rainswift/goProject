@@ -15,42 +15,40 @@ type Service struct {
 func AddUser(c *gin.Context) {
 
 	var user models.BlogUser
-	if err := AddUser2(c); err != nil {
-		return
-	}
-	if err := c.ShouldBind(&user); err != nil {
 
+	if err := c.ShouldBind(&user); err != nil {
 		response.Failed("参数错误", c)
 		return
 	}
-	fmt.Printf("% + v\n", user.Username)
+	if err := AddUser2(user.Username); err != nil {
+		response.Failed("用户名已经存在", c)
+		return
+	}
+	fmt.Printf("输入的名字 % + v\n", user.Username)
 	fmt.Println(c)
 	dao.Mgr.AddUser(&user)
-
 	response.Success("添加成功", user, c)
 }
 
 // 创建用户
-func AddUser2(con *gin.Context) error {
-	var c dao.Manager
-	var user models.BlogUser
-	//if user.Password != user.Password2 {
-	//	return ErrMismatchedPasswords
-	//}
+func AddUser2(name string) error {
+
 	// 用户名存在
-	_, err := c.GetByName(user.Username)
-	if err == nil {
+	flag := dao.Mgr.GetByName(name)
+	fmt.Println(flag)
+	if flag {
+		return nil
+	} else {
 		return ErrUserExistWithName
 	}
 	// 无效用户名
-	if models.ValidateUserName(user.Username) {
-		return ErrInvalidUsername
-	}
+	//if models.ValidateUserName(user.Username) {
+	//	return ErrInvalidUsername
+	//}
 	// 无效密码
-	if models.ValidatePassword(user.Password) {
-		return ErrInvalidPassword
-	}
+	//if models.ValidatePassword(user.Password) {
+	//	return ErrInvalidPassword
+	//}
 	// 创建用户
 	//c.AddUser(&user)
-	return err
 }

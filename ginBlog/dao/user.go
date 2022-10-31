@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"fmt"
 	"goProject/ginBlog/models"
 	"log"
 
@@ -10,7 +11,8 @@ import (
 
 type Manager interface {
 	AddUser(user *models.BlogUser)
-	GetByName(name string) (models.BlogUser, error)
+	GetByName(name string) bool
+	Cs_text()
 }
 
 type manager struct {
@@ -41,11 +43,31 @@ func (mgr *manager) AddUser(user *models.BlogUser) {
 }
 
 // 根据用户名查询用户
-func (mgr *manager) GetByName(name string) (models.BlogUser, error) {
+func (mgr *manager) GetByName(name string) bool {
 	var user models.BlogUser
-	err := mgr.db.Where("UserName = ?", name).Where("IsDeleted = ?", 0).First(&user, "UserName = ?", name).Error
-	if err != nil {
-		return models.BlogUser{}, err
+
+	//mgr.db.Last(&user)
+	//result := mgr.db.Where("username = ?", "qq")
+	//affected := result.RowsAffected
+	//fmt.Printf("% + v\n",result)
+	//fmt.Println(affected)
+
+	result := mgr.db.Where("username = ?", name).First(&user, "username = ?", name)
+	//if err != nil {
+	//	return false
+	//}
+	affected := result.RowsAffected
+	if affected >= 1 {
+		return false
+	} else {
+		return true
 	}
-	return user, nil
+}
+
+func (mgr *manager) Cs_text() {
+	var user models.BlogUser
+	result := mgr.db.Last(&user)
+	affected := result.RowsAffected
+	fmt.Printf("% + v\n", user.Username)
+	fmt.Println(affected)
 }
